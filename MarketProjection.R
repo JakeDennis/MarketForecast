@@ -3,6 +3,7 @@ library(fpp2)
 library(gridExtra)
 library(GGally)
 library(Holidays)
+library(lubridate)
 library(TimeWarp)
 
 df = read.csv("DIX.csv", header = TRUE)
@@ -117,38 +118,66 @@ ggplot(df, aes(gex, pct_change)) +
 
 #develop covariates to measure seasonality
 df$weekday = as.POSIXlt(df$date)$wday
+df$month <- month(df$date)
+df$Monday = 0
+df$Tuesday = 0
+df$Wednesday = 0
+df$Thursday = 0
+df$Friday = 0
+df$January = 0
+df$February = 0
+df$March = 0
+df$April = 0
+df$May = 0
+df$June = 0
+df$July = 0
+df$August = 0
+df$September = 0
+df$October = 0
+df$November = 0
+df$December = 0
 
-#create dummy variables for M-F
-for(i in 1:length(df$date))
+#create dummy variables for M-F and months
+for (i in 1:length(df$date)) {
   if (df$weekday[i]==1) {
     df$Monday[i]=1
-  } else {
-      df$Monday[i]=0
-  }
-for(i in 1:length(df$date))
-  if (df$weekday[i]==2) {
+  } else if (df$weekday[i]==2) {
     df$Tuesday[i]=1
-  } else {
-    df$Tuesday[i]=0
-  }
-for(i in 1:length(df$date))
-  if (df$weekday[i]==3) {
+  } else if (df$weekday[i]==3) {
     df$Wednesday[i]=1
-  } else {
-    df$Wednesday[i]=0
-  }
-for(i in 1:length(df$date))
-  if (df$weekday[i]==4) {
+  } else if (df$weekday[i]==4) {
     df$Thursday[i]=1
   } else {
-    df$Thursday[i]=0
-  }
-for(i in 1:length(df$date))
-  if (df$weekday[i]==5) {
     df$Friday[i]=1
-  } else {
-    df$Friday[i]=0
   }
+}
+for (i in 1:length(df$date)) {
+  if (df$month[i]==1) {
+    df$January[i]=1
+  } else if (df$month[i]==2) {
+    df$February[i]=1
+  } else if (df$month[i]==3) {
+    df$March[i]=1
+  } else if (df$month[i]==4) {
+    df$April[i]=1
+  } else if (df$month[i]==5) {
+    df$May[i]=1
+  } else if (df$month[i]==6) {
+    df$June[i]=1
+  } else if (df$month[i]==7) {
+    df$July[i]=1
+  } else if (df$month[i]==8) {
+    df$August[i]=1
+  } else if (df$month[i]==9) {
+    df$September[i]=1
+  } else if (df$month[i]==10) {
+    df$October[i]=1
+  } else if (df$month[i]==11) {
+    df$November[i]=1
+  } else {
+    df$December[i]=1
+  }
+}
 ggplot(df, aes(x=weekday, y=pct_change, group=weekday)) +
   geom_boxplot(outlier.shape = NA, na.rm = TRUE) + 
   scale_y_continuous(limits = quantile(df$pct_change, c(0.1, 0.9), na.rm=TRUE)) +
@@ -159,9 +188,9 @@ ggplot(df, aes(x=weekday, y=pct_change, group=weekday)) +
 ggplot(df, aes(x=weekday, y=vix, group=weekday)) +
   geom_boxplot() + 
   scale_y_continuous(limits = quantile(df$vix, c(0, 1), na.rm=TRUE)) +
-  labs(title = "VIX by Weekday",
+  labs(title = "VIX by Month",
        subtitle = "Implied Volatility of SPX") +
-  xlab("Day of Week (M-F)") + ylab("VIX Value")
+  xlab("Month") + ylab("VIX Value")
 
 #remove outliers to see quartiles better
 ggplot(df, aes(x=weekday, y=vix, group=weekday)) +
@@ -170,6 +199,28 @@ ggplot(df, aes(x=weekday, y=vix, group=weekday)) +
   labs(title = "VIX by Weekday",
        subtitle = "Implied Volatility of SPX: Outliers Removed") +
   xlab("Day of Week (M-F)") + ylab("VIX Value")
+
+ggplot(df, aes(x=month, y=pct_change, group=month)) +
+  geom_boxplot(outlier.shape = NA, na.rm = TRUE) + 
+  scale_y_continuous(limits = quantile(df$pct_change, c(0.1, 0.9), na.rm=TRUE)) +
+  labs(title = "% Returns of SPX by Month",
+       subtitle = "Outliers are ignored") +
+  xlab("Month") + ylab("Percent Return")
+
+ggplot(df, aes(x=month, y=vix, group=month)) +
+  geom_boxplot() + 
+  scale_y_continuous(limits = quantile(df$vix, c(0, 1), na.rm=TRUE)) +
+  labs(title = "VIX by Month",
+       subtitle = "Implied Volatility of SPX") +
+  xlab("Month") + ylab("VIX Value")
+
+#remove outliers to see quartiles better
+ggplot(df, aes(x=month, y=vix, group=month)) +
+  geom_boxplot(outlier.shape = NA) + 
+  scale_y_continuous(limits = quantile(df$vix, c(0.1, .9), na.rm=TRUE)) +
+  labs(title = "VIX by Month",
+       subtitle = "Implied Volatility of SPX: Outliers Removed") +
+  xlab("Month") + ylab("VIX Value")
 
 ggplot(df, aes(x=daysUntilOpEx, y=gex, group=daysUntilOpEx)) +
   geom_boxplot(outlier.shape = NA) + 
